@@ -20,57 +20,64 @@
  */
 #pragma once
 
-#include <hunspell/hunspell.hxx>
+//#include <hunspell/hunspell.hxx>
 
 namespace ChatHelpers {
 
-class HunspellHelper {
-public:
-	HunspellHelper(const QByteArray &lang)
-	: _hunspell(nullptr)
-	, _codec(nullptr)
-	{
-		const auto basePath = (cWorkingDir() + qsl("tdata/spell/") + lang).toUtf8();
-		const auto affPath = basePath + ".aff";
-		const auto dicPath = basePath + ".dic";
-		if (QFileInfo(affPath).isFile() && QFileInfo(dicPath).isFile()) {
-			_hunspell = std::make_unique<Hunspell>(affPath, dicPath);
-			_codec = QTextCodec::codecForName(_hunspell->get_dic_encoding());
-			if (!_codec) {
-				_hunspell.reset();
-			}
-		}
-	}
+  class AbstractSpellHelper {
+  public:
+    virtual bool spell(const QString &word) = 0;
+    virtual bool spell(const QStringRef &word) = 0;
+    virtual QVector<QString> suggest(const QString &word) = 0;
+  };
 
-	inline bool isOpen() const {
-		return (bool)_hunspell;
-	}
-
-	inline bool spell(const QString &word) {
-		return _hunspell->spell(_codec->fromUnicode(word).toStdString());
-	}
-	inline bool spell(const QStringRef &word) {
-		return _hunspell->spell(_codec->fromUnicode(word.data(), word.length()).toStdString());
-	}
-
-	QVector<QString> suggest(const QString &word) {
-		auto suggestions = _hunspell->suggest(_codec->fromUnicode(word).toStdString());
-
-		QVector<QString> result;
-		result.reserve(suggestions.size());
-
-		for (auto &suggestion : suggestions) {
-			result.append(_codec->toUnicode(suggestion.data(), suggestion.length()));
-		}
-
-		return result;
-	}
-
-private:
-	std::unique_ptr<Hunspell> _hunspell;
-	QTextCodec *_codec;
-
-};
+//class HunspellHelper: public AbstractSpellHelper {
+//public:
+//	HunspellHelper(const QByteArray &lang)
+//	: _hunspell(nullptr)
+//	, _codec(nullptr)
+//	{
+//		const auto basePath = (cWorkingDir() + qsl("tdata/spell/") + lang).toUtf8();
+//		const auto affPath = basePath + ".aff";
+//		const auto dicPath = basePath + ".dic";
+//		if (QFileInfo(affPath).isFile() && QFileInfo(dicPath).isFile()) {
+//			_hunspell = std::make_unique<Hunspell>(affPath, dicPath);
+//			_codec = QTextCodec::codecForName(_hunspell->get_dic_encoding());
+//			if (!_codec) {
+//				_hunspell.reset();
+//			}
+//		}
+//	}
+//
+//	inline bool isOpen() const {
+//		return (bool)_hunspell;
+//	}
+//
+//	bool spell(const QString &word) override {
+//		return _hunspell->spell(_codec->fromUnicode(word).toStdString());
+//	}
+//	bool spell(const QStringRef &word) override {
+//		return _hunspell->spell(_codec->fromUnicode(word.data(), word.length()).toStdString());
+//	}
+//
+//	QVector<QString> suggest(const QString &word) override {
+//		auto suggestions = _hunspell->suggest(_codec->fromUnicode(word).toStdString());
+//
+//		QVector<QString> result;
+//		result.reserve(suggestions.size());
+//
+//		for (auto &suggestion : suggestions) {
+//			result.append(_codec->toUnicode(suggestion.data(), suggestion.length()));
+//		}
+//
+//		return result;
+//	}
+//
+//private:
+//	std::unique_ptr<Hunspell> _hunspell;
+//	QTextCodec *_codec;
+//
+//};
 
 class SpellHelperSet final {
 public:
@@ -94,7 +101,7 @@ public:
 	QList<QVector<QString>> getSuggestions(const QString &word) const;
 
 private:
-	std::map<QString, std::unique_ptr<HunspellHelper>> _helpers;
+	std::map<QString, std::unique_ptr<AbstractSpellHelper>> _helpers;
 
 };
 

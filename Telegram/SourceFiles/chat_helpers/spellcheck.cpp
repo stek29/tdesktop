@@ -46,10 +46,10 @@ SpellHelperSet::~SpellHelperSet() {
 void SpellHelperSet::addLanguages(const QStringList &languages) {
 	for (const auto &lang : languages) {
 		if (_helpers.count(lang) == 0) {
-			auto helper = std::unique_ptr<HunspellHelper>(std::make_unique<HunspellHelper>(lang.toLatin1()));
-			if (helper->isOpen()) {
-				_helpers.emplace(lang, std::move(helper));
-			}
+//			auto helper = std::unique_ptr<HunspellHelper>(std::make_unique<HunspellHelper>(lang.toLatin1()));
+//			if (helper->isOpen()) {
+//				_helpers.emplace(lang, std::move(helper));
+//			}
 		}
 	}
 }
